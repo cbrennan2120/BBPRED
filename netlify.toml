@@ -18,4 +18,3 @@
 [build.environment]
   # Ensuring the build environment is set to production
   NODE_VERSION = "20"
-  NPM_FLAGS = "--version"
