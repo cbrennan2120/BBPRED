@@ -1,7 +1,7 @@
 import './globals.css';
 
 export const metadata = {
-  title: 'Cyberathlete Bodybuilding Prediction',
+  title: 'CBsBodybuilding Prediction',
   description: 'Predict the Top 5 IFBB Pro Open placements.',
 };
 
