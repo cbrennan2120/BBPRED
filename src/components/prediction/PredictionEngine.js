@@ -1,14 +1,13 @@
 "use client";
 
-import { useState } from 'react';
-import { DndContext, closestCenter, TouchSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
-import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { SortablePlayerCard } from './SortablePlayerCard';
+import { createClient } from '@/lib/supabase';
+import { useAuth } from '@/context/AuthContext';
 
 export const PredictionEngine = ({ athletes, showId }) => {
+  const { user, loginWithGoogle } = useAuth();
   const [ranked, setRanked] = useState([]); 
-  const [userName, setUserName] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const supabase = createClient();
 
   // Sensors optimized for mobile touch without breaking scroll
   const sensors = useSensors(
@@ -41,23 +40,28 @@ export const PredictionEngine = ({ athletes, showId }) => {
 
   const submitPrediction = async (e) => {
     e.preventDefault();
-    const payload = new URLSearchParams({
-      'form-name': 'prediction-form',
-      'userName': userName,
-      'showId': showId,
-      'top5': ranked.map(a => a.name).join(', ')
-    });
+    if (!user) {
+      alert('Please login to save your prediction!');
+      loginWithGoogle();
+      return;
+    }
 
     try {
-      await fetch('/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: payload.toString()
-      });
-      alert('Prediction submitted to the leaderboard!');
+      const { error } = await supabase
+        .from('predictions')
+        .insert({
+          user_id: user.id,
+          user_name: user.email.split('@')[0], // Fallback username
+          show_id: showId,
+          top_5: ranked.map(a => a.name)
+        });
+
+      if (error) throw error;
+      
+      alert('Prediction saved to Supabase!');
     } catch (err) {
       console.error(err);
-      alert('Failed to submit prediction. Simulated Netlify Form submission.');
+      alert('Failed to save prediction. Make sure you have created the "predictions" table in Supabase.');
     }
   };
 
@@ -105,14 +109,6 @@ export const PredictionEngine = ({ athletes, showId }) => {
           <span className="text-sm font-mono text-champagne-onyx/70">{ranked.length}/5</span>
         </div>
         
-        <input 
-          className="w-full bg-rich-black border border-carbon-fiber p-3 rounded mb-6 text-champagne-onyx placeholder-champagne-onyx/50 focus:outline-none focus:border-funky-gold transition-colors" 
-          placeholder="Your Display Name"
-          value={userName}
-          onChange={(e) => setUserName(e.target.value)}
-          required
-        />
-        
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={ranked} strategy={verticalListSortingStrategy}>
             <div className="space-y-3 min-h-[400px] border-2 border-dashed border-carbon-fiber rounded-lg p-4 flex-1">
@@ -136,10 +132,10 @@ export const PredictionEngine = ({ athletes, showId }) => {
 
         <button 
           type="submit" 
-          disabled={ranked.length !== 5 || !userName}
+          disabled={ranked.length !== 5}
           className="w-full mt-8 py-4 bg-gradient-to-r from-funky-gold to-bronze-coin text-rich-black font-black uppercase tracking-widest rounded hover:scale-[1.02] transition-transform disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed"
         >
-          {ranked.length !== 5 ? `Select ${5 - ranked.length} more athletes` : "Submit to Netlify"}
+          {!user ? "Login to Submit" : (ranked.length !== 5 ? `Select ${5 - ranked.length} more athletes` : "Save Prediction")}
         </button>
       </form>
     </div>

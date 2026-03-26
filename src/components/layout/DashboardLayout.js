@@ -12,7 +12,11 @@ const MobileLink = ({ href, label, active }) => (
   </a>
 );
 
+import { useAuth } from '@/context/AuthContext';
+
 const DashboardLayout = ({ children }) => {
+  const { user, loginWithGoogle, logout } = useAuth();
+
   return (
     <div className="flex h-screen bg-rich-black text-champagne-onyx font-sans overflow-hidden">
       {/* Sidebar for Desktop */}
@@ -33,10 +37,30 @@ const DashboardLayout = ({ children }) => {
         </nav>
 
         <div className="mt-auto pt-6 border-t border-carbon-fiber">
-          <h4 className="text-xs font-bold text-bronze-coin uppercase mb-2">The Creator</h4>
-          <p className="text-[11px] leading-relaxed text-champagne-onyx/70">
-            From dominating the digital arena to mastering the stage. Join the journey of the ultimate hybrid athlete.
-          </p>
+          {user ? (
+            <div className="space-y-4">
+               <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-funky-gold to-bronze-coin" />
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold truncate max-w-[120px]">{user.email}</span>
+                    <span className="text-[10px] text-bronze-coin font-mono">LVL 01</span>
+                  </div>
+               </div>
+               <button 
+                onClick={logout}
+                className="w-full py-2 text-[10px] uppercase tracking-widest font-black border border-carbon-fiber hover:border-funky-gold/50 transition-colors"
+               >
+                 Logout
+               </button>
+            </div>
+          ) : (
+            <button 
+              onClick={loginWithGoogle}
+              className="w-full py-3 bg-funky-gold text-rich-black text-[10px] uppercase tracking-widest font-black rounded hover:scale-[1.02] transition-transform"
+            >
+              Login with Google
+            </button>
+          )}
         </div>
       </aside>
 
@@ -44,10 +68,12 @@ const DashboardLayout = ({ children }) => {
       <main className="flex-1 flex flex-col relative overflow-y-auto">
         <header className="sticky top-0 z-30 bg-rich-black/80 backdrop-blur-md p-4 md:px-10 md:py-6 border-b border-carbon-fiber flex justify-between items-center">
           <h2 className="text-xl font-bold uppercase tracking-wide">Dashboard</h2>
-          <div className="flex items-center gap-4">
-            <span className="text-xs font-mono text-bronze-coin">LVL 01</span>
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-funky-gold to-bronze-coin" />
-          </div>
+          {user && (
+            <div className="flex items-center gap-4">
+              <span className="text-xs font-mono text-bronze-coin">LVL 01</span>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-funky-gold to-bronze-coin" />
+            </div>
+          )}
         </header>
 
         <section className="p-4 md:p-10 pb-32">

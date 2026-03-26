@@ -5,12 +5,15 @@ export const metadata = {
   description: 'Predict the Top 5 IFBB Pro Open placements.',
 };
 
+import { AuthProvider } from '@/context/AuthContext';
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className="antialiased bg-rich-black text-champagne-onyx font-sans">
-
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
