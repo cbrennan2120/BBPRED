@@ -1,5 +1,9 @@
 "use client";
 
+import { useState } from 'react';
+import { DndContext, closestCenter, TouchSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortablePlayerCard } from './SortablePlayerCard';
 import { createClient } from '@/lib/supabase';
 import { useAuth } from '@/context/AuthContext';
 
